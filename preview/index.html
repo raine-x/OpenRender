@@ -536,7 +536,7 @@
         return `<code class="tex-inline">${esc(span.tex)}</code>`;
       }
       case 'footnote_ref':
-        return `<sup class="fn-ref">[${esc(span.name)}]</sup>`;
+        return `<sup class="fn-ref">${esc(span.name)}</sup>`;
       default:
         return '';
     }

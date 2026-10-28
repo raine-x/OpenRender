@@ -370,7 +370,6 @@ $$
 [OpenRender：把解析成本变成增量](https://example.com/openrender "没有 WebView，也没有全量重解析")
 
 脚注也能流式出现[^1]。
-
 [^1]: 这是一个脚注定义块。
 </script>
 
@@ -495,7 +494,7 @@ $$
         }
         return `<code class="tex">${esc(span.tex)}</code>`;
       case 'footnote_ref':
-        return `<sup class="fn-ref">[${esc(span.name)}]</sup>`;
+        return `<sup class="fn-ref">${esc(span.name)}</sup>`;
       default:
         return '';
     }

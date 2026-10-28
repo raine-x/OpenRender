@@ -16,7 +16,7 @@ use openrender::{Block, Config, Delta, Engine, Op};
 
 const DOC: &str = r##"# OpenRender 渲染预览
 
-这是由 Rust 引擎输出的 **IR** 直接渲染的页面：*斜体*、~~删除线~~、`行内代码`、[链接](https://example.com/docs)、行内公式 $E=mc^2$ 与脚注[^1]。
+这是由 Rust 引擎输出的 **IR** 直接渲染的页面：*斜体*、~~删除线~~、`行内代码`、[链接](https://example.com/docs)、行内公式 $E=mc^2$。
 
 > [!TIP]
 > 这是 GFM 警告块。它来自 `> [!TIP]` 语法，宿主可以完全自定义视觉样式。
@@ -60,7 +60,8 @@ $$
 
 [OpenRender：流式 Markdown 引擎](https://example.com/openrender "在单一内核里完成解析、容错与增量输出")
 
-[^1]: 脚注定义会被渲染成独立的小卡片。
+脚注也能流式出现[^1]。
+[^1]: 这是一个脚注定义块。
 "##;
 
 fn main() {
