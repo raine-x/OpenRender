@@ -1,0 +1,29 @@
+[package]
+name = "openrender-latex"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Optional LaTeX math rendering adapter for openrender"
+
+[lib]
+path = "src/lib.rs"
+
+[features]
+default = ["embed-fonts"]
+# Pure-Rust KaTeX-compatible RaTeX engine (PNG output).
+ratex = [
+    "dep:ratex-types",
+    "dep:ratex-parser",
+    "dep:ratex-layout",
+    "dep:ratex-render",
+    "ratex-render?/embed-fonts",
+]
+# Embed KaTeX TTF fonts so rendered PNGs are self-contained on device.
+embed-fonts = ["ratex-render?/embed-fonts"]
+
+[dependencies]
+ratex-types = { version = "0.1", optional = true }
+ratex-parser = { version = "0.1", optional = true }
+ratex-layout = { version = "0.1", optional = true }
+ratex-render = { version = "0.1", optional = true }

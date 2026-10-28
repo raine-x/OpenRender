@@ -1,0 +1,6 @@
+/target
+/android/jniLibs
+/android/app/build
+/android/build
+/android/.gradle
+*.h.tmp

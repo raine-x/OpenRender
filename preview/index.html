@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenRender · IR Preview</title>
+<style>
+  :root {
+    --ink: #1f2328;
+    --muted: #6b7280;
+    --faint: #9ca3af;
+    --line: #ececef;
+    --soft: #f7f8fa;
+    --accent: #2563eb;
+    --radius: 16px;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+      "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    background: #fff;
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.82;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 28px 32px 8px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+
+  .brand-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+    background: #111827;
+    display: grid;
+    place-items: center;
+  }
+
+  .brand-dot::after {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  .chip {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 10px;
+    background: #fff;
+  }
+
+  .shell {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 12px 32px 72px;
+  }
+
+  .paper {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 48px 56px 56px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03), 0 24px 64px -32px rgba(16, 24, 40, 0.12);
+  }
+
+  #doc > *:first-child { margin-top: 0; }
+
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    margin: 1.7em 0 0.6em;
+    font-weight: 660;
+  }
+
+  h1 { font-size: 32px; }
+  h2 { font-size: 23px; }
+  h3 { font-size: 19px; }
+  h4, h5, h6 { font-size: 16px; }
+
+  p { margin: 0.85em 0; }
+
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(37, 99, 235, 0.25); }
+  a:hover { border-bottom-color: var(--accent); }
+
+  strong { font-weight: 650; }
+  del { color: var(--muted); }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.87em;
+    background: #f5f6f8;
+    border: 1px solid #eceef1;
+    border-radius: 6px;
+    padding: 0.12em 0.42em;
+    white-space: break-spaces;
+  }
+
+  .code-card {
+    margin: 1.25em 0;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fbfbfc;
+  }
+
+  .code-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 16px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.01em;
+  }
+
+  .code-head .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--faint);
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+  }
+
+  .streaming .status-dot { background: #f59e0b; }
+
+  .code-card pre {
+    margin: 0;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.7;
+  }
+
+  .code-card pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+
+  blockquote.quote {
+    margin: 1.1em 0;
+    padding: 4px 0 4px 18px;
+    border-left: 3px solid #d9dde3;
+    color: #374151;
+  }
+
+  blockquote.quote.alert-note { border-color: #3b82f6; }
+  blockquote.quote.alert-tip { border-color: #10b981; }
+  blockquote.quote.alert-important { border-color: #8b5cf6; }
+  blockquote.quote.alert-warning { border-color: #f59e0b; }
+  blockquote.quote.alert-caution { border-color: #ef4444; }
+
+  .alert-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #3b82f6;
+    margin: 0 0 2px;
+  }
+
+  .alert-tip .alert-badge { color: #059669; }
+  .alert-important .alert-badge { color: #7c3aed; }
+  .alert-warning .alert-badge { color: #d97706; }
+  .alert-caution .alert-badge { color: #dc2626; }
+
+  .li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin: 0.28em 0;
+  }
+
+  .li .marker {
+    flex: none;
+    min-width: 18px;
+    color: var(--faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .li .marker.bullet { font-size: 18px; line-height: 1.5; }
+
+  .checkbox {
+    width: 15px;
+    height: 15px;
+    margin-top: 6px;
+    border-radius: 5px;
+    border: 1.5px solid #d1d5db;
+    display: inline-block;
+    position: relative;
+  }
+
+  .checkbox.on { background: #111827; border-color: #111827; }
+
+  .checkbox.on::after {
+    content: "";
+    position: absolute;
+    left: 3.5px;
+    top: 0.5px;
+    width: 4px;
+    height: 8px;
+    border: solid #fff;
+    border-width: 0 1.6px 1.6px 0;
+    transform: rotate(42deg);
+  }
+
+  .li .body { flex: 1; min-width: 0; }
+
+  .table-wrap {
+    margin: 1.25em 0;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  th, td { padding: 11px 16px; border-bottom: 1px solid var(--line); }
+  th { background: #fafbfc; font-weight: 600; font-size: 13px; letter-spacing: 0.01em; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: #fcfcfd; }
+
+  hr.rule { border: 0; height: 1px; background: var(--line); margin: 2.2em 0; }
+
+  .footnote {
+    margin: 1.2em 0;
+    padding: 12px 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fafbfc;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .footnote .fn-marker {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink);
+    margin-right: 8px;
+  }
+
+  sup.fn-ref {
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 1px;
+    cursor: default;
+  }
+
+  .formula {
+    margin: 1.2em 0;
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: #fbfbfc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 74px;
+  }
+
+  .formula img { max-width: 100%; max-height: 110px; }
+  .tex-inline, .tex-block { font-family: var(--mono); color: #57534e; }
+  img.math-inline { vertical-align: -0.32em; max-height: 1.65em; }
+
+  figure.media {
+    margin: 1.4em 0;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    overflow: hidden;
+    background: #fafbfc;
+    position: relative;
+  }
+
+  figure.media .placeholder {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: #b6bcc6;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    background: repeating-linear-gradient(135deg, #fbfbfc, #fbfbfc 12px, #f6f7f9 12px, #f6f7f9 24px);
+  }
+
+  figure.media img {
+    display: block;
+    width: 100%;
+    height: auto;
+    position: relative;
+    z-index: 1;
+    background: #fff;
+  }
+
+  figure.media.failed img { display: none; }
+
+  figure.media figcaption {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 16px;
+    font-size: 12.5px;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+    background: #fff;
+  }
+
+  .audio-card {
+    margin: 1.3em 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 18px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: #fff;
+  }
+
+  .play {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #111827;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    flex: none;
+    padding-left: 2px;
+  }
+
+  .audio-meta { flex: 1; min-width: 0; }
+  .audio-title { font-weight: 600; font-size: 14.5px; }
+  .audio-src { font-size: 12px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .waves { display: flex; align-items: center; gap: 3px; height: 26px; flex: none; }
+  .waves i { width: 3px; border-radius: 3px; background: #d1d5db; animation: wave 1.4s ease-in-out infinite; }
+  .waves i:nth-child(1) { height: 8px; animation-delay: 0s; }
+  .waves i:nth-child(2) { height: 16px; animation-delay: .1s; }
+  .waves i:nth-child(3) { height: 22px; animation-delay: .2s; }
+  .waves i:nth-child(4) { height: 12px; animation-delay: .3s; }
+  .waves i:nth-child(5) { height: 18px; animation-delay: .4s; }
+  .waves i:nth-child(6) { height: 9px; animation-delay: .5s; }
+
+  @keyframes wave {
+    0%, 100% { transform: scaleY(0.55); opacity: .7; }
+    50% { transform: scaleY(1); opacity: 1; }
+  }
+
+  .audio-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 1px 9px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #fafbfc;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  a.preview {
+    display: block;
+    margin: 1.4em 0;
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: #fff;
+    color: inherit;
+    border-bottom-color: var(--line);
+    transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+    position: relative;
+    text-decoration: none;
+  }
+
+  a.preview:hover {
+    border-color: #d7dbe1;
+    box-shadow: 0 8px 28px -18px rgba(16, 24, 40, .35);
+    transform: translateY(-1px);
+  }
+
+  .preview-kicker {
+    font-size: 10.5px;
+    font-weight: 650;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 6px;
+  }
+
+  .preview-title { font-weight: 620; font-size: 15.5px; letter-spacing: -0.01em; }
+  .preview-desc { color: var(--muted); font-size: 13.5px; margin-top: 3px; }
+  .preview-url { color: var(--faint); font-size: 12px; margin-top: 8px; font-family: var(--mono); }
+
+  .preview-arrow {
+    position: absolute;
+    right: 18px;
+    top: 18px;
+    color: var(--faint);
+    font-size: 16px;
+  }
+
+  .page-foot {
+    display: flex;
+    justify-content: space-between;
+    color: var(--faint);
+    font-size: 12px;
+    margin-top: 22px;
+    padding: 0 8px;
+    font-family: var(--mono);
+  }
+
+  .error {
+    color: #b91c1c;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+
+  @media (max-width: 720px) {
+    .topbar, .shell { padding-left: 16px; padding-right: 16px; }
+    .paper { padding: 28px 22px 36px; border-radius: 18px; }
+    h1 { font-size: 26px; }
+    h2 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-dot"></span>OpenRender<span class="chip">IR Preview</span></div>
+    <span class="chip" id="meta">loading…</span>
+  </header>
+
+  <div class="shell">
+    <main class="paper" id="doc"></main>
+    <div class="page-foot">
+      <span>rendered from raw IR · no webview · no javascript runtime in the engine</span>
+      <span>openrender 0.1</span>
+    </div>
+  </div>
+
+<script>
+  const state = new Map();
+  const docEl = document.getElementById('doc');
+  const metaEl = document.getElementById('meta');
+
+  const ALERT_LABEL = {
+    note: 'Note', tip: 'Tip', important: 'Important', warning: 'Warning', caution: 'Caution'
+  };
+
+  const ALIGN = { left: 'left', center: 'center', right: 'right', none: 'left' };
+
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function renderSpan(span) {
+    switch (span.type) {
+      case 'text': {
+        let inner = esc(span.text);
+        if (span.bold) inner = `<strong>${inner}</strong>`;
+        if (span.italic) inner = `<em>${inner}</em>`;
+        if (span.strike) inner = `<del>${inner}</del>`;
+        if (span.url) {
+          const title = span.title ? ` title="${esc(span.title)}"` : '';
+          inner = `<a href="${esc(span.url)}"${title} target="_blank" rel="noreferrer noopener">${inner}</a>`;
+        }
+        return inner;
+      }
+      case 'code':
+        return `<code>${esc(span.text)}</code>`;
+      case 'softbreak':
+        return ' ';
+      case 'hardbreak':
+        return '<br>';
+      case 'image': {
+        const src = esc(span.src || span.url || '');
+        const alt = esc(span.alt || '');
+        const size = span.width && span.height ? `${span.width} × ${span.height}` : '图片';
+        return `<figure class="media">
+          <div class="placeholder">${alt || 'IMAGE'}</div>
+          <img src="${src}" alt="${alt}" loading="lazy" onerror="this.closest('figure').classList.add('failed')">
+          <figcaption><span>${alt || '图片'}</span><span>${size} · IR image span</span></figcaption>
+        </figure>`;
+      }
+      case 'audio':
+        return `<span class="audio-chip">▶ ${esc(span.alt || span.title || '音频')}</span>`;
+      case 'latex_inline': {
+        if (span.math && span.math.data) {
+          return `<img class="math-inline" alt="tex" src="data:${esc(span.math.mime)};base64,${span.math.data}">`;
+        }
+        return `<code class="tex-inline">${esc(span.tex)}</code>`;
+      }
+      case 'footnote_ref':
+        return `<sup class="fn-ref">[${esc(span.name)}]</sup>`;
+      default:
+        return '';
+    }
+  }
+
+  function spansOf(block) {
+    return (block.spans || []).map(renderSpan).join('');
+  }
+
+  function renderBlock(block) {
+    switch (block.type) {
+      case 'heading': {
+        const level = Math.min(6, Math.max(1, block.level || 2));
+        return `<h${level}>${spansOf(block)}</h${level}>`;
+      }
+      case 'paragraph': {
+        const inner = spansOf(block);
+        if ((block.spans || []).length === 1 && block.spans[0].type === 'image') {
+          return inner;
+        }
+        if (block.quote > 0) {
+          const cls = block.alert ? `alert-${esc(block.alert)}` : '';
+          const badge = block.alert
+            ? `<div class="alert-badge">● ${esc(ALERT_LABEL[block.alert] || block.alert)}</div>`
+            : '';
+          return `<blockquote class="quote ${cls}">${badge}<p>${inner}</p></blockquote>`;
+        }
+        return `<p>${inner}</p>`;
+      }
+      case 'list_item': {
+        const depth = block.depth || 0;
+        const indent = depth * 22;
+        let marker;
+        if (block.checked === true) marker = '<span class="checkbox on"></span>';
+        else if (block.checked === false) marker = '<span class="checkbox"></span>';
+        else if (block.marker && block.marker.ordered) marker = `<span class="marker">${block.marker.number}.</span>`;
+        else marker = '<span class="marker bullet">•</span>';
+        return `<div class="li" style="margin-left:${indent}px">
+          ${marker}
+          <span class="body">${spansOf(block)}</span>
+        </div>`;
+      }
+      case 'code_block': {
+        const streaming = block.closed === false;
+        return `<div class="code-card ${streaming ? 'streaming' : ''}">
+          <div class="code-head">
+            <span>${esc(block.lang || 'text')}</span>
+            <span class="status"><i class="status-dot"></i>${streaming ? 'streaming' : 'closed'}</span>
+          </div>
+          <pre><code>${esc(block.text)}</code></pre>
+        </div>`;
+      }
+      case 'table': {
+        const table = block.table || { align: [], header: [], rows: [] };
+        const align = (i) => ALIGN[table.align[i]] || 'left';
+        const head = (table.header || []).map((cell, i) =>
+          `<th style="text-align:${align(i)}">${cell.map(renderSpan).join('')}</th>`
+        ).join('');
+        const body = (table.rows || []).map(row =>
+          `<tr>${row.map((cell, i) =>
+            `<td style="text-align:${align(i)}">${cell.map(renderSpan).join('')}</td>`
+          ).join('')}</tr>`
+        ).join('');
+        return `<div class="table-wrap"><table>
+          ${head ? `<thead><tr>${head}</tr></thead>` : ''}
+          <tbody>${body}</tbody>
+        </table></div>`;
+      }
+      case 'rule':
+        return '<hr class="rule">';
+      case 'footnote_def':
+        return `<div class="footnote"><span class="fn-marker">[^${esc(block.name)}]</span>${spansOf(block)}</div>`;
+      case 'latex_block': {
+        if (block.math && block.math.data) {
+          return `<div class="formula"><img alt="formula" src="data:${esc(block.math.mime)};base64,${block.math.data}"></div>`;
+        }
+        return `<div class="formula"><code class="tex-block">${esc(block.text)}</code></div>`;
+      }
+      case 'audio':
+        return `<div class="audio-card">
+          <div class="play">▶</div>
+          <div class="audio-meta">
+            <div class="audio-title">${esc(block.title || '语音')}</div>
+            <div class="audio-src">${esc(block.url)}</div>
+          </div>
+          <div class="waves"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        </div>`;
+      case 'link_preview': {
+        let host = '';
+        try { host = new URL(block.url).host; } catch (e) { host = ''; }
+        return `<a class="preview" href="${esc(block.url)}" target="_blank" rel="noreferrer noopener">
+          <div class="preview-kicker">链接预览${host ? ' · ' + esc(host) : ''}</div>
+          <div class="preview-title">${esc(block.title || block.url)}</div>
+          ${block.description ? `<div class="preview-desc">${esc(block.description)}</div>` : ''}
+          <div class="preview-url">${esc(block.url)}</div>
+          <div class="preview-arrow">↗</div>
+        </a>`;
+      }
+      default:
+        return `<pre class="error">unknown block: ${esc(block.type)}</pre>`;
+    }
+  }
+
+  fetch('delta.json', { cache: 'no-store' })
+    .then((response) => response.json())
+    .then((delta) => {
+      for (const op of delta.ops || []) {
+        if (op.op === 'put') state.set(op.block.id, op.block);
+        else if (op.op === 'remove') state.delete(op.id);
+        else if (op.op === 'append') {
+          const block = state.get(op.id);
+          if (block) block.text = (block.text || '') + op.text;
+        } else if (op.op === 'close') {
+          const block = state.get(op.id);
+          if (block) block.closed = true;
+        }
+      }
+      const blocks = Array.from(state.values()).sort((a, b) => a.id - b.id);
+      docEl.innerHTML = blocks.map(renderBlock).join('');
+      metaEl.textContent = `${blocks.length} blocks · rev ${delta.rev}`;
+      document.body.classList.add('ready');
+    })
+    .catch((error) => {
+      docEl.innerHTML = `<pre class="error">${esc(error && error.message ? error.message : error)}</pre>`;
+      metaEl.textContent = 'failed';
+    });
+</script>
+</body>
+</html>

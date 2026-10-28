@@ -1,0 +1,33 @@
+[package]
+name = "openrender-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Streaming-first Markdown to a language-neutral IR, with C ABI and JNI bindings"
+
+[lib]
+name = "openrender"
+crate-type = ["cdylib", "staticlib", "rlib"]
+
+[dependencies]
+pulldown-cmark = { workspace = true }
+openrender-latex = { path = "../openrender-latex", optional = true }
+jni = { workspace = true, optional = true }
+
+[features]
+default = []
+# Emit TeX + allow a host-supplied math renderer.
+latex = ["dep:openrender-latex"]
+# Also embed the pure-Rust RaTeX renderer (PNG output, embedded KaTeX fonts).
+ratex = ["latex", "openrender-latex/ratex"]
+# Android JNI bridge.
+jni = ["dep:jni"]
+
+[[example]]
+name = "stream"
+path = "examples/stream.rs"
+
+[[example]]
+name = "bench"
+path = "examples/bench.rs"
