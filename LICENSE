@@ -1,7 +1,15 @@
-MIT License
+OpenRender MIT 许可证（MIT License）
+Copyright (c) 2026 raine-x
+联系邮箱：2653603072@qq.com
 
-Copyright (c) 2026 OpenRender contributors
+================================================================================
+一、MIT 许可证（本仓库全部内容的授权）
+================================================================================
 
+本仓库的全部内容（Rust 源代码、构建脚本、示例与文档）依 MIT License
+（MIT 许可证）授权给任何获得副本的人：
+
+----------------------------------------------------------------
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -19,3 +27,29 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+----------------------------------------------------------------
+
+================================================================================
+二、第三方组件与许可（保留各自原许可）
+================================================================================
+
+本仓库按第三方许可证使用下列组件，著作权归各自作者所有，按各自许可证发布。
+本文件的 MIT 授权不改变这些组件的许可条件，也不对其构成再许可。
+
+  组件                        位置                              许可证
+  ----------------------------------------------------------------------------
+  KaTeX 字体                  crates/openrender-latex           MIT / SIL OFL 1.1
+  （公式排版字体，按默认特性   按 feature "embed-fonts" /        上游 KaTeX/KaTeX
+  embed-fonts 或 ratex 内嵌   ratex 内嵌于构建产物
+  于 PNG 排版产物）
+
+  说明：
+
+  (1) 字体按 SIL OFL 1.1 允许随软件再分发；OFL 不允许对字体本身施加
+      额外限制，本文件的授权条款不影响这些字体的 OFL 条件。
+
+================================================================================
+三、免责声明
+================================================================================
+
+MIT 条款的免责声明（AS IS、免责与责任限制）适用于本软件的全部部分。
