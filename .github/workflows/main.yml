@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  fmt:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --all -- --check
+
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo test --workspace
+      - run: cargo test -p openrender-latex --features ratex
+      - run: cargo build -p openrender-core --features jni
+
+  clippy:
+    name: Clippy (advisory)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      # Warnings are reported but not fatal; the gate is compile errors.
+      # Once the 34 current warnings (mostly missing `# Safety` docs on the
+      # FFI surface) are fixed, add `-D warnings` to enforce.
+      - run: cargo clippy --workspace --all-targets
+
+  wasm:
+    name: WASM build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: Build core (no fonts)
+        run: cargo build -p openrender-core --target wasm32-unknown-unknown --release
+      - name: Guard core size (README claims ~301 KiB)
+        run: |
+          size=$(stat -c%s target/wasm32-unknown-unknown/release/openrender.wasm)
+          echo "core wasm: $size bytes"
+          test "$size" -lt 327680  # fail if >= 320 KiB
+      - name: Build ratex (embedded KaTeX fonts)
+        run: cargo build -p openrender-core --target wasm32-unknown-unknown --release --features ratex
+
+  header:
+    name: C header sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cbindgen
+      - run: cbindgen --config cbindgen.toml --crate openrender-core --output include/engine.h
+      - name: Header must match checked-in include/engine.h
+        run: git diff --exit-code include/engine.h
+
+  android:
+    name: Android (jni + latex, 3 ABIs)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android, armv7-linux-androideabi, x86_64-linux-android
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-ndk
+      - name: Locate preinstalled Android NDK
+        run: |
+          ndk=$(ls -d "$ANDROID_HOME"/ndk/* 2>/dev/null | head -1)
+          if [ -z "$ndk" ]; then
+            echo "No NDK found under \$ANDROID_HOME; runner image changed?"
+            exit 1
+          fi
+          echo "Using NDK: $ndk"
+          echo "ANDROID_NDK_HOME=$ndk" >> "$GITHUB_ENV"
+      - run: ./scripts/build-android.sh --jni --latex
+      - name: Verify artifacts and exports
+        run: |
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            test -f "android/jniLibs/$abi/libopenrender.so"
+          done
+          grep -q "or_engine_feed" android/jniLibs/arm64-v8a/libopenrender.so
+          grep -q "Java_ai_openrender_NativeEngine" android/jniLibs/arm64-v8a/libopenrender.so
