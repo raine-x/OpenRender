@@ -106,7 +106,9 @@ jobs:
           fi
           echo "Using NDK: $ndk"
           echo "ANDROID_NDK_HOME=$ndk" >> "$GITHUB_ENV"
-      - run: ./scripts/build-android.sh --jni --latex
+      # Invoke via bash: the script is stored in git without the exec bit
+      # (mode 100644), so direct ./ invocation fails with exit 126 on Linux.
+      - run: bash scripts/build-android.sh --jni --latex
       - name: Verify artifacts and exports
         run: |
           for abi in arm64-v8a armeabi-v7a x86_64; do

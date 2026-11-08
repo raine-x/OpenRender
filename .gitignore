@@ -4,3 +4,6 @@
 /android/build
 /android/.gradle
 *.h.tmp
+
+# release artifacts (built locally, never committed)
+/release-assets
