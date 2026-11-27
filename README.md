@@ -6,9 +6,8 @@
 
 ![OpenRender IR preview](preview/preview.png)
 
-<video src="https://raw.githubusercontent.com/raine-x/OpenRender/main/web/demo.mp4" controls muted loop playsinline></video>
+![OpenRender live streaming demo · 实时流式演示](web/demo.gif)
 
-*Live streaming demo · 实时流式演示（[MP4](web/demo.mp4)）*
 
 OpenRender feeds on fragments, settles only blocks that can no longer change, and emits language-neutral JSON directives with stable block ids. No WebView, no JavaScript runtime, no GUI toolkit.
 

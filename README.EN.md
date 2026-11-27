@@ -285,9 +285,9 @@ android/jniLibs/static/<abi>/libopenrender.a
 |---|---|
 | ![Live streaming, mid-stream](web/stream-mid.png) | ![Live streaming, completed](web/stream-done.png) |
 
-<video src="https://raw.githubusercontent.com/raine-x/OpenRender/main/web/demo.mp4" controls muted loop playsinline></video>
+![OpenRender live streaming demo](web/demo.gif)
 
-*Screen recording of the live demo: character-by-character input, incremental DOM updates and live kernel metrics. Direct file: [`web/demo.mp4`](web/demo.mp4).*
+*Character-by-character input, incremental DOM updates and live kernel metrics.*
 
 ```bash
 rustup target add wasm32-unknown-unknown

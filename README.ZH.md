@@ -285,9 +285,9 @@ android/jniLibs/static/<abi>/libopenrender.a
 |---|---|
 | ![实时流式，进行中](web/stream-mid.png) | ![实时流式，完成](web/stream-done.png) |
 
-<video src="https://raw.githubusercontent.com/raine-x/OpenRender/main/web/demo.mp4" controls muted loop playsinline></video>
+![OpenRender 实时流式演示](web/demo.gif)
 
-*实时演示录屏：逐字符喂入、DOM 增量更新、右侧内核指标实时变化。原始文件：[`web/demo.mp4`](web/demo.mp4)。*
+*演示中逐字符输入，页面增量更新，右侧同步显示内核指标。*
 
 ```bash
 rustup target add wasm32-unknown-unknown
